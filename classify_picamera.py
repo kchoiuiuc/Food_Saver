@@ -26,6 +26,7 @@ import time
 import picamera
 import pickle
 import RPi.GPIO as GPIO
+import sys
 from datetime import datetime, timedelta
 from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
@@ -127,6 +128,22 @@ def main():
   GPIO.setwarnings(False)
   GPIO.setmode(GPIO.BCM)
   GPIO.setup(17, GPIO.OUT)
+
+  values = doc.read_data()
+  cur_time = datetime.now()
+  is_expired = 0
+  for i, val in enumerate(values):
+      if i:
+          exp_date = datetime.strptime(val[2], '%Y-%m-%d %H:%M:%S')
+          if exp_date < cur_time:
+              is_expired = 1
+              print(val) 
+              break
+  if is_expired:
+    GPIO.output(17, True)
+    time.sleep(5)
+    GPIO.output(17, False)
+
   parser = argparse.ArgumentParser(
       formatter_class=argparse.ArgumentDefaultsHelpFormatter)
   parser.add_argument(
